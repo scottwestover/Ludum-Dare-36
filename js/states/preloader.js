@@ -33,8 +33,12 @@ Preloader.prototype = {
         this.game.load.image('spear', 'assets/images/spear.png');
         this.game.load.image('spearHead', 'assets/images/spearHead.png');
         this.game.load.image('stick', 'assets/images/stick.png');
+        this.game.load.spritesheet('caveman', 'assets/images/spritesheet_caveman.png', 32, 32);
+        this.game.load.spritesheet('birds', 'assets/images/birds.png', 32, 32, 12);
         /* load the audio for our game */
         this.game.load.audio('bgMusic', 'assets/audio/Overworld.mp3');
+        this.game.load.audio('menuMusic', 'assets/audio/MenuFinal.mp3');
+        this.game.load.script('style', 'js/style.js');
     },
 
     create: function () {
@@ -44,9 +48,9 @@ Preloader.prototype = {
         game.state.add('GameOver', GameOver);
         /* start the main menu state */
         setTimeout(function () {
-            //this.game.state.start('MainMenu');
-            this.game.state.start('Game');
-        }, 1000);
+            this.game.state.start('MainMenu');
+            //this.game.state.start('Game');
+        }, 500);
     }
 
 };
