@@ -9,7 +9,7 @@ Preloader.prototype = {
     init: function () {
         /* initialize our progress bar and logo */
         this.loadingBar = game.make.sprite(game.world.centerX-(387/2), 400, "loadingBar");
-        this.status     = game.make.text(game.world.centerX, 380, 'Loading...', {fill: 'white'});
+        this.status = game.make.text(game.world.centerX, 380, 'Loading...', {fill: 'white'});
         utils.centerGameObjects([this.status]);
     },
 
@@ -25,6 +25,16 @@ Preloader.prototype = {
         this.game.load.script('game', 'js/states/game.js');
         this.game.load.script('gameover', 'js/states/gameover.js');
         /* load all of the assets for our game */
+        this.game.load.tilemap('level1', 'assets/images/level1.json', null, Phaser.Tilemap.TILED_JSON);
+        this.game.load.image('tilesheet1', 'assets/images/tilesheet1.png');
+        this.game.load.spritesheet('phaser', 'assets/images/tilesheet1.png', 16, 16);
+        this.game.load.image('fire', 'assets/images/fire.png');
+        this.game.load.image('background', 'assets/images/forest.png');
+        this.game.load.image('spear', 'assets/images/spear.png');
+        this.game.load.image('spearHead', 'assets/images/spearHead.png');
+        this.game.load.image('stick', 'assets/images/stick.png');
+        /* load the audio for our game */
+        this.game.load.audio('bgMusic', 'assets/audio/Overworld.mp3');
     },
 
     create: function () {
@@ -34,8 +44,9 @@ Preloader.prototype = {
         game.state.add('GameOver', GameOver);
         /* start the main menu state */
         setTimeout(function () {
-            this.game.state.start('MainMenu');
-        }, 3000);
+            //this.game.state.start('MainMenu');
+            this.game.state.start('Game');
+        }, 1000);
     }
 
 };

@@ -13,7 +13,8 @@ GameOver.prototype = {
     create: function () {
         /* start the main menu state */
         setTimeout(function () {
-            this.game.state.start('MainMenu');
+            //this.game.state.start('MainMenu');
+            this.game.state.start('Game');
         }, 3000);
     }
 

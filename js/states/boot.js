@@ -1,5 +1,5 @@
 /* Create yourphaser game object, and insert it into the div on the index.html */
-var game = new Phaser.Game(800, 600, Phaser.AUTO, 'game');
+var game = new Phaser.Game(800, 608, Phaser.AUTO, 'game');
 /* Define a Boot state for our game
  * The boot state will load all of our assets for pre-loader state
  * and then start that state.
