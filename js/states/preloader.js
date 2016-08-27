@@ -6,9 +6,20 @@
 var Preloader = function () {};
 Preloader.prototype = {
 
+    init: function () {
+        /* initialize our progress bar and logo */
+        this.loadingBar = game.make.sprite(game.world.centerX-(387/2), 400, "loadingBar");
+        this.status     = game.make.text(game.world.centerX, 380, 'Loading...', {fill: 'white'});
+        utils.centerGameObjects([this.status]);
+    },
+
     preload: function () {
         /* display lime for this state */
-        this.stage.backgroundColor = '#00ff00';
+        this.stage.backgroundColor = '#000000';
+        /* display our progress bar and logo */
+        game.add.existing(this.loadingBar);
+        game.add.existing(this.status);
+        this.load.setPreloadSprite(this.loadingBar);
         /* load the assets for our states */
         this.game.load.script('menu', 'js/states/menu.js');
         this.game.load.script('game', 'js/states/game.js');

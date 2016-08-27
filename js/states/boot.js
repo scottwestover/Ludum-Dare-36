@@ -10,6 +10,8 @@ Boot.prototype = {
     preload: function () {
         /* load the assets for our preloader */
         this.game.load.script('preloader', 'js/states/preloader.js');
+        this.game.load.image('loadingBar', 'assets/images/loading.png');
+        this.game.load.script('utils', 'js/utils.js');
     },
 
     create: function () {
