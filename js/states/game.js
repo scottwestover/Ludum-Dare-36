@@ -31,11 +31,14 @@ var Game = function (game) {
     fly = null;
     totalBirds = 0;
     parent = null;
+    enemyGroup = null;
+    heart = null;
 };
 
 Game.prototype = {
     
     preload: function () {
+         spearCollected = 0;
         /* display darkolivegreen for this state */
         this.game.stage.backgroundColor = '#73DCFF';
         gameState = this.game.state;
@@ -46,6 +49,9 @@ Game.prototype = {
     },
 
     create: function () {
+        
+        /* create our enemy group */
+        //enemyGroup = this.game.add.group();
         
         // Define movement constants
         this.MAX_SPEED = 120; // pixels/second
@@ -68,17 +74,20 @@ Game.prototype = {
         player = this.game.add.sprite(390, 559, 'caveman');
         this.setObjectProperties(player, this.game, true, false);
         player.anchor.setTo(0.5, 0.5);
-        player.scale.setTo(0.5,0.5);
+        player.scale.setTo(0.65,0.65);
         walk = player.animations.add('walk');
         player.animations.play('walk', 10, true);
+
+        /* create our enemies*/        
+        enemy = new Enemy(parent, 220, 530);
+        this.game.add.existing(enemy);
         
-        /* create one enemy */
-        enemy = this.game.add.sprite(220, 530, 'phaser', 14);
-        this.setObjectProperties(enemy, this.game, true, false);
-        enemy.body.velocity.x = this.MAX_SPEED / 2;
-        enemy.body.bounce.x = 1;
         enemy2 = new Enemy(parent,752, 239);
         this.game.add.existing(enemy2);
+        //enemyGroup.add(enemy2);
+        enemy3 = new Enemy(parent,145, 336);
+        this.game.add.existing(enemy3);
+        //enemyGroup.add(enemy2);
         
         /* create the fire object */
         fire = this.game.add.sprite(randomLocations[0].x, randomLocations[0].y, 'fire');
@@ -110,7 +119,7 @@ Game.prototype = {
         this.setObjectProperties(stick, this.game, true, true);
         
         /* enable collisions on the map */
-        this.initMapCollisions();
+        this.initMapCollisions(this.destroyAll);
         
         /* enable keyboard controls */
         this.game.input.keyboard.addKeyCapture([
@@ -123,13 +132,19 @@ Game.prototype = {
         ]);
         
         /* create our music */
-        music = this.game.add.audio('menuMusic', 1, true);
+        music = this.game.add.audio('bgMusic', 1, true);
         music.play();
+        
+        /* create our lives */
+        for(var i = 0; i < lives; i ++) {
+            var x = 752 - (i * 16);
+            heart = this.game.add.sprite(x, 32, 'heart');
+            this.setObjectProperties(heart, this.game, true, true);
+        }
 
     },
 
     update: function () {
-
         /* check for collisions */
         this.game.physics.arcade.collide(player, this.mapLayer);
         this.game.physics.arcade.collide(player, this.ladderLayer);
@@ -141,14 +156,6 @@ Game.prototype = {
         this.game.physics.arcade.collide(enemy, attackSpear);
         this.game.physics.arcade.collide(enemy, this.mapLayer);
         //enemy movement
-        this.game.physics.arcade.collide(enemy, this.edgesLayer, function(enemy, edge){
-            if(enemy.body.velocity.x > 0){
-                enemy.body.velocity.x = -this.MAX_SPEED /2;
-            }else{
-                enemy.body.velocity.x = this.MAX_SPEED /2;
-            }
-        });
-        this.enemyFollow(enemy);
         
         /* check for item collisions */
         this.itemCollisionUpdate();
@@ -161,9 +168,34 @@ Game.prototype = {
         
         /*check for collision between player and enemy*/
         if(this.game.physics.arcade.collide(player, enemy)){
-            music.stop();
-            music.destroy();
-            this.game.state.start('Game');
+            this.destroyAll();
+            lives--;
+            if(lives == 0){
+                this.game.state.start('GameOver');
+            }
+            else {
+                this.game.state.start('Game');
+            }
+        }
+        if(this.game.physics.arcade.collide(player, enemy3)){
+            this.destroyAll();
+            lives--;
+            if(lives == 0){
+                this.game.state.start('GameOver');
+            }
+            else {
+                this.game.state.start('Game');
+            }
+        }
+        if(this.game.physics.arcade.collide(player, enemy2)){
+            this.destroyAll();
+            lives--;
+            if(lives == 0){
+                this.game.state.start('GameOver');
+            }
+            else {
+                this.game.state.start('Game');
+            }
         }
         
         /* check for player input */
@@ -172,6 +204,14 @@ Game.prototype = {
         if (this.game.physics.arcade.collide(enemy, attackSpear.bullets))
         {
             enemy.kill();
+        }
+         if (this.game.physics.arcade.collide(enemy2, attackSpear.bullets))
+        {
+            enemy2.kill();
+        }
+         if (this.game.physics.arcade.collide(enemy3, attackSpear.bullets))
+        {
+            enemy3.kill();
         }
         
         /* see if birds are out of bounds */
@@ -199,10 +239,10 @@ Game.prototype = {
     },
     
     enemyFollow: function(tempEnemy){
-        var close = Math.abs(player.x - tempEnemy.x) < 30;
+        var close = Math.abs(player.x - tempEnemy.x) < 50 && Math.abs(player.y - tempEnemy.y) < 35;
        if(close){
             tempEnemy.body.velocity.x = Math.min(this.MAX_SPEED * 2, 
-            Math.max(3 * (player.x - tempEnemy.x), -this.MAX_SPEED * 2)) ;
+            Math.max(4 * (player.x - tempEnemy.x), -this.MAX_SPEED * 2)) ;
         }
         return close;
     },
@@ -256,7 +296,7 @@ Game.prototype = {
         this.game.add.existing(this.edgesLayer);
     },
     
-    initMapCollisions: function() {
+    initMapCollisions: function(des) {
         this.mapLayer.enableBody = true;
         player.body.collideWorldBounds = true;
         this.mapData.setCollisionBetween(0,2000,true,this.mapLayer);
@@ -268,7 +308,7 @@ Game.prototype = {
         this.mapData.setCollisionBetween(0,2000,true,this.exitLayer);
         this.mapData.setTileIndexCallback(13, function() {
             if(fireCollected){
-                music.stop();
+                des();
                 gameState.start('Level2');
             }
         }, this.game, this.exitLayer);
@@ -293,13 +333,13 @@ Game.prototype = {
             player.body.velocity.x = -this.MAX_SPEED;
             attackSpear.bulletSpeed = -400;
             attackSpear.bulletAngleOffset = 225;
-            player.scale.setTo(0.5,0.5);
+            player.scale.setTo(0.65,0.65);
         } else if (this.rightInputIsActive()) {
             // If the RIGHT key is down, set the player velocity to move right
             player.body.velocity.x = this.MAX_SPEED;
             attackSpear.bulletSpeed = 400;
             attackSpear.bulletAngleOffset = 45;
-            player.scale.setTo(-0.5,0.5);
+            player.scale.setTo(-0.65,0.65);
         }
         // for testing purposes - DELETE or uncomment later
         /*
@@ -322,8 +362,8 @@ Game.prototype = {
         }
         if(this.attackInputIsActive()) {
             if(spearCollected > 0){
-                spearCollected -= 1;
-                spear.alpha = 0;
+                //spearCollected -= 1;
+                //spear.alpha = 0;
                 attackSpear.fire();
             }
         }
@@ -384,6 +424,20 @@ Game.prototype = {
             results.push(choice);
         }
         return results;
+    },
+    
+    destroyAll: function() {
+        music.stop();
+        //enemy2.destroy();
+        //enemy3.destroy();
+        //enemy.destroy();
+        music.destroy();
+        birds.destroy();
+        spear.destroy();
+        spearHead.destroy();
+        stick.destroy();
+        fire.destroy();
+        //player.destroy();
     }
     
 };
@@ -391,16 +445,19 @@ Game.prototype = {
 //generic enemy constructor
 
 Enemy = function(parentObj,x, y){
-    Phaser.Sprite.call(this, parentObj.game, x, y, 'phaser', 14);
+    Phaser.Sprite.call(this, parentObj.game, x, y, 'enemy_caveman');
     parentObj.setObjectProperties(this, parentObj.game, true, false);
     this.body.velocity.x = 120 / 2;
     this.body.bounce.x = 1;
+    this.anchor.setTo(0.5,0.5);
+    this.scale.setTo(-0.65,0.65);
     this.parentObj = parentObj;
+    this.animations.add('walk');
+    this.animations.play('walk', 10, true);
 };
 Enemy.prototype = Object.create(Phaser.Sprite.prototype);
 Enemy.prototype.constructor = Enemy;
 Enemy.prototype.update = function(){
-    this.parentObj.game.physics.arcade.collide(this, this.parentObj.mapLayer);
     this.parentObj.game.physics.arcade.collide(this, this.parentObj.edgesLayer, function(tempEnemy, edge){
         if(tempEnemy.body.velocity.x < 0){
             tempEnemy.body.velocity.x = -120 /2;
@@ -408,5 +465,7 @@ Enemy.prototype.update = function(){
             tempEnemy.body.velocity.x = 120 /2;
         }
     }, null,this);
+    this.scale.x = -0.65 * (this.body.velocity.x/Math.abs(this.body.velocity.x));
+    this.parentObj.game.physics.arcade.collide(this, this.parentObj.mapLayer);
     this.parentObj.enemyFollow(this);
 }

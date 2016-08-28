@@ -12,6 +12,7 @@ GameOver.prototype = {
     preload: function () {
         /* display maroon for this state */
         this.stage.backgroundColor = '#000000';
+        lives = 3;
     },
 
     create: function () {

@@ -16,11 +16,11 @@ MainMenu.prototype = {
 
     create: function () {
         /* create our music */
-        music = this.game.add.audio('bgMusic', 1, true);
+        music = this.game.add.audio('menuMusic', 1, true);
         music.play();
         /* create our title text */
-        var titleText = game.add.text(0,0,"Lumen Dare 36",style);
-        titleText.setTextBounds(0, 100, 800, 300);
+        var titleText = game.add.text(0,0,"Ludum Dare 36",style);
+        titleText.setTextBounds(0, 100, 800, 100);
         /* start game text */
         var startText = game.add.text(0,0,"Play",style);
         /* sets the bounds of the text to center it */
@@ -37,6 +37,22 @@ MainMenu.prototype = {
         });
         startText.events.onInputOut.add(function (target) {
             startText.fill= "#fff";
+        });
+        var instructionsText = game.add.text(0,0,"How To Play",style);
+        /* sets the bounds of the text to center it */
+        instructionsText.setTextBounds(0, 100, 800, 700);
+        /* if the start text is clicked, start the game state */
+        instructionsText.inputEnabled = true;
+        instructionsText.events.onInputUp.add(function () {
+            music.stop();
+            this.game.state.start('Instructions'); 
+        });
+        /* adds a hover effect to our instructions button */
+        instructionsText.events.onInputOver.add(function () {
+            instructionsText.fill= "#a6a6a6";
+        });
+        instructionsText.events.onInputOut.add(function (target) {
+            instructionsText.fill= "#fff";
         });
     }
 

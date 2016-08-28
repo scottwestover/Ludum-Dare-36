@@ -4,6 +4,7 @@
  * the main menu.
  */
 var Preloader = function () {};
+var lives = 3;
 Preloader.prototype = {
 
     init: function () {
@@ -25,7 +26,9 @@ Preloader.prototype = {
         this.game.load.script('game', 'js/states/game.js');
         this.game.load.script('gameover', 'js/states/gameover.js');
         this.game.load.script('style', 'js/style.js');
+        this.game.load.script('style1', 'js/style1.js');
         this.game.load.script('level2Script', 'js/states/level2.js');
+        this.game.load.script('instructions', 'js/states/howto.js');
         /* load all of the assets for our game */
         this.game.load.tilemap('level1', 'assets/images/level1.json', null, Phaser.Tilemap.TILED_JSON);
         this.game.load.tilemap('level2', 'assets/images/level2.json', null, Phaser.Tilemap.TILED_JSON);
@@ -37,10 +40,12 @@ Preloader.prototype = {
         this.game.load.image('spearHead', 'assets/images/spearHead.png');
         this.game.load.image('stick', 'assets/images/stick.png');
         this.game.load.spritesheet('caveman', 'assets/images/spritesheet_caveman.png', 32, 32);
+        this.game.load.spritesheet('enemy_caveman', 'assets/images/spritesheet_caveman_enemy.png', 32, 32);
         this.game.load.spritesheet('birds', 'assets/images/birds.png', 32, 32, 12);
+        this.game.load.image('heart', 'assets/images/heart.png');
         /* load the audio for our game */
         this.game.load.audio('bgMusic', 'assets/audio/Overworld.mp3');
-        this.game.load.audio('menuMusic', 'assets/audio/MenuFinal.mp3');
+        this.game.load.audio('menuMusic', 'assets/audio/Menu.mp3');
     },
 
     create: function () {
@@ -49,12 +54,13 @@ Preloader.prototype = {
         game.state.add('Game', Game);
         game.state.add('GameOver', GameOver);
         game.state.add('Level2', Level2);
+        game.state.add('Instructions', Instructions);
         /* start the main menu state */
-        setTimeout(function () {
-            //this.game.state.start('MainMenu');
-            this.game.state.start('Game');
+        setTimeout(function(){ 
+            this.game.state.start('MainMenu');
+            //this.game.state.start('Game');
             //this.game.state.start('Level2');
-        }, 1500);
+        }, 500);
     }
 
 };
