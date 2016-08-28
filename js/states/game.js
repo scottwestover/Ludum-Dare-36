@@ -33,6 +33,16 @@ var Game = function (game) {
     parent = null;
     enemyGroup = null;
     heart = null;
+    part1 = null;
+    part2 = null;
+    throwSpear = null;
+    winningSound = null;
+    climbingSound = null;
+    enemyRunSound = null;
+    playerDieSound = null;
+    enemyDieSound = null;
+    itemPickUpSound = null;
+    climbing = 0;
 };
 
 Game.prototype = {
@@ -71,12 +81,7 @@ Game.prototype = {
         this.createBirds();
         
         /* create our player */
-        player = this.game.add.sprite(390, 559, 'caveman');
-        this.setObjectProperties(player, this.game, true, false);
-        player.anchor.setTo(0.5, 0.5);
-        player.scale.setTo(0.65,0.65);
-        walk = player.animations.add('walk');
-        player.animations.play('walk', 10, true);
+        player = new Player(this.game, 390, 559);
 
         /* create our enemies*/        
         enemy = new Enemy(parent, 220, 530);
@@ -134,6 +139,15 @@ Game.prototype = {
         /* create our music */
         music = this.game.add.audio('bgMusic', 1, true);
         music.play();
+        part1 = this.game.add.audio('spearPart1');
+        part2 = this.game.add.audio('spearPart2');
+        throwSpear = this.game.add.audio('spearThrow');
+        winningSound = this.game.add.audio('winningSound');
+        climbingSound = this.game.add.audio('climbingSound');
+        enemyRunSound = this.game.add.audio('enemyRunSound');
+        playerDieSound = this.game.add.audio('playerDieSound');
+        enemyDieSound = this.game.add.audio('enemyDieSound');
+        itemPickUpSound = this.game.add.audio('itemPickUpSound');
         
         /* create our lives */
         for(var i = 0; i < lives; i ++) {
@@ -164,10 +178,12 @@ Game.prototype = {
             spearCollected++;
             spearHeadCollected = false;
             stickCollected = false;
+            itemPickUpSound.play();
         }
         
         /*check for collision between player and enemy*/
         if(this.game.physics.arcade.collide(player, enemy)){
+            playerDieSound.play();
             this.destroyAll();
             lives--;
             if(lives == 0){
@@ -178,6 +194,7 @@ Game.prototype = {
             }
         }
         if(this.game.physics.arcade.collide(player, enemy3)){
+            playerDieSound.play();
             this.destroyAll();
             lives--;
             if(lives == 0){
@@ -188,6 +205,7 @@ Game.prototype = {
             }
         }
         if(this.game.physics.arcade.collide(player, enemy2)){
+            playerDieSound.play();
             this.destroyAll();
             lives--;
             if(lives == 0){
@@ -204,14 +222,17 @@ Game.prototype = {
         if (this.game.physics.arcade.collide(enemy, attackSpear.bullets))
         {
             enemy.kill();
+            enemyDieSound.play();
         }
          if (this.game.physics.arcade.collide(enemy2, attackSpear.bullets))
         {
             enemy2.kill();
+            enemyDieSound.play();
         }
          if (this.game.physics.arcade.collide(enemy3, attackSpear.bullets))
         {
             enemy3.kill();
+            enemyDieSound.play();
         }
         
         /* see if birds are out of bounds */
@@ -225,7 +246,18 @@ Game.prototype = {
         }
     },
     
-    // This function should return true when the player activates the "go left" control
+    
+    enemyFollow: function(tempEnemy){
+        var close = Math.abs(player.x - tempEnemy.x) < 50 && Math.abs(player.y - tempEnemy.y) < 35;
+       if(close){
+            tempEnemy.body.velocity.x = Math.min(this.MAX_SPEED * 2, 
+            Math.max(4 * (player.x - tempEnemy.x), -this.MAX_SPEED * 2)) ;
+            enemyRunSound.play();
+        }
+        return close;
+    },
+    
+        // This function should return true when the player activates the "go left" control
     // In this case, either holding the right arrow or tapping or clicking on the left
     // side of the screen.
     leftInputIsActive: function() {
@@ -236,15 +268,6 @@ Game.prototype = {
             this.game.input.activePointer.x < this.game.width/4);
 
         return isActive;
-    },
-    
-    enemyFollow: function(tempEnemy){
-        var close = Math.abs(player.x - tempEnemy.x) < 50 && Math.abs(player.y - tempEnemy.y) < 35;
-       if(close){
-            tempEnemy.body.velocity.x = Math.min(this.MAX_SPEED * 2, 
-            Math.max(4 * (player.x - tempEnemy.x), -this.MAX_SPEED * 2)) ;
-        }
-        return close;
     },
     
     // This function should return true when the player activates the "go right" control
@@ -308,6 +331,7 @@ Game.prototype = {
         this.mapData.setCollisionBetween(0,2000,true,this.exitLayer);
         this.mapData.setTileIndexCallback(13, function() {
             if(fireCollected){
+                winningSound.play();
                 des();
                 gameState.start('Level2');
             }
@@ -365,6 +389,7 @@ Game.prototype = {
                 //spearCollected -= 1;
                 //spear.alpha = 0;
                 attackSpear.fire();
+                throwSpear.play();
             }
         }
     },
@@ -383,33 +408,36 @@ Game.prototype = {
         /* spear head collected */
         if(this.game.physics.arcade.collide(player, spearHead)){
             spearHeadCollected = true;
+            part1.play();
             spearHead.destroy();
         }
         /* stick collected */
         if(this.game.physics.arcade.collide(player, stick)){
             stickCollected = true;
+            part2.play();
             stick.destroy();
         }
     },
     
     createBirds: function() {
-        birds = this.game.add.sprite(-20, 32, 'birds');
-        fly = birds.animations.add('fly', [0,1,2,3,4]);
-        birds.animations.play('fly', 7, true);
-        birds.scale.setTo(-0.75,0.75);
-        this.game.physics.enable(birds, Phaser.Physics.ARCADE);
-        birds.body.velocity.x=150;
-        birds.body.allowGravity = false;
+        birds = new Bird(this.game, -20, 32);
         totalBirds = 1;
     },
     
     checkTiles: function(bool, bool2) {
         if (canClimb && bool) {
             player.body.velocity.y = -100;
+            if(climbing == 0) {
+                climbingSound.play();
+                climbing = 1;
+            }
         }
         if (canCross && bool2) {
             player.body.velocity.y = 0;
             //player.body.allowGravity = false;
+        }
+        if(canClimb && !bool) {
+            climbing = 0;
         }
     },
     
@@ -441,31 +469,3 @@ Game.prototype = {
     }
     
 };
-
-//generic enemy constructor
-
-Enemy = function(parentObj,x, y){
-    Phaser.Sprite.call(this, parentObj.game, x, y, 'enemy_caveman');
-    parentObj.setObjectProperties(this, parentObj.game, true, false);
-    this.body.velocity.x = 120 / 2;
-    this.body.bounce.x = 1;
-    this.anchor.setTo(0.5,0.5);
-    this.scale.setTo(-0.65,0.65);
-    this.parentObj = parentObj;
-    this.animations.add('walk');
-    this.animations.play('walk', 10, true);
-};
-Enemy.prototype = Object.create(Phaser.Sprite.prototype);
-Enemy.prototype.constructor = Enemy;
-Enemy.prototype.update = function(){
-    this.parentObj.game.physics.arcade.collide(this, this.parentObj.edgesLayer, function(tempEnemy, edge){
-        if(tempEnemy.body.velocity.x < 0){
-            tempEnemy.body.velocity.x = -120 /2;
-        }else{
-            tempEnemy.body.velocity.x = 120 /2;
-        }
-    }, null,this);
-    this.scale.x = -0.65 * (this.body.velocity.x/Math.abs(this.body.velocity.x));
-    this.parentObj.game.physics.arcade.collide(this, this.parentObj.mapLayer);
-    this.parentObj.enemyFollow(this);
-}

@@ -15,12 +15,17 @@ MainMenu.prototype = {
     },
 
     create: function () {
+        /* create our background */
+        var background = this.game.add.sprite(0,0,'cave');
+        //background.alpha = 0.6;
         /* create our music */
         music = this.game.add.audio('menuMusic', 1, true);
         music.play();
         /* create our title text */
         var titleText = game.add.text(0,0,"Ludum Dare 36",style);
-        titleText.setTextBounds(0, 100, 800, 100);
+        titleText.setTextBounds(0, 100, 800, -50);
+        var titleText = game.add.text(0,0,"Caveman Runner",style);
+        titleText.setTextBounds(0, 100, 800, 150);
         /* start game text */
         var startText = game.add.text(0,0,"Play",style);
         /* sets the bounds of the text to center it */
