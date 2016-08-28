@@ -1,7 +1,7 @@
 /* Define a Game state for our game
  * The game state will handle the actual gameplay of our game.
  */
-var Game = function (game) {
+var Level2 = function (game) {
     mapData = null;
     mapLayer = null;
     ladderLayer = null;
@@ -27,13 +27,10 @@ var Game = function (game) {
     attackSpear = null;
     walk = null;
     randomLocations = null;
-    birds = null;
-    fly = null;
-    totalBirds = 0;
-    parent = null;
+    parent = this;
 };
 
-Game.prototype = {
+Level2.prototype = {
     
     preload: function () {
         /* display darkolivegreen for this state */
@@ -42,7 +39,6 @@ Game.prototype = {
         fireCollected = false;
         /* choose random locations for items */
         randomLocations = this.chooseLocation();
-        parent = this;
     },
 
     create: function () {
@@ -61,9 +57,6 @@ Game.prototype = {
         this.initMapData();
         this.game.physics.arcade.enable([this.mapLayer]);
         
-        /* create our birds */
-        this.createBirds();
-        
         /* create our player */
         player = this.game.add.sprite(390, 559, 'caveman');
         this.setObjectProperties(player, this.game, true, false);
@@ -73,12 +66,10 @@ Game.prototype = {
         player.animations.play('walk', 10, true);
         
         /* create one enemy */
-        enemy = this.game.add.sprite(220, 530, 'phaser', 14);
+        enemy = this.game.add.sprite(220, 430, 'phaser', 14);
         this.setObjectProperties(enemy, this.game, true, false);
         enemy.body.velocity.x = this.MAX_SPEED / 2;
         enemy.body.bounce.x = 1;
-        enemy2 = new Enemy(parent,752, 239);
-        this.game.add.existing(enemy2);
         
         /* create the fire object */
         fire = this.game.add.sprite(randomLocations[0].x, randomLocations[0].y, 'fire');
@@ -161,9 +152,10 @@ Game.prototype = {
         
         /*check for collision between player and enemy*/
         if(this.game.physics.arcade.collide(player, enemy)){
+            enemy.destroy();
             music.stop();
             music.destroy();
-            this.game.state.start('Game');
+            this.game.state.start('Level2');
         }
         
         /* check for player input */
@@ -172,16 +164,6 @@ Game.prototype = {
         if (this.game.physics.arcade.collide(enemy, attackSpear.bullets))
         {
             enemy.kill();
-        }
-        
-        /* see if birds are out of bounds */
-        if(birds.worldPosition.x > 840) {
-            if(totalBirds == 1){
-            birds.destroy();
-            totalBirds = 0;
-            var randomNum = Math.floor(Math.random() * 6 + 1);
-            this.game.time.events.add(Phaser.Timer.SECOND * randomNum, this.createBirds, this);
-            }
         }
     },
     
@@ -242,9 +224,9 @@ Game.prototype = {
     },
     
     initMapData: function() {
-        this.mapData = this.game.add.tilemap('level1');
+        this.mapData = this.game.add.tilemap('level2');
         this.mapData.addTilesetImage('tilesheet1');
-        this.mapLayer = this.mapData.createLayer('level1');
+        this.mapLayer = this.mapData.createLayer('level2');
         this.game.add.existing(this.mapLayer);
         this.ladderLayer = this.mapData.createLayer('ladder');
         this.game.add.existing(this.ladderLayer);
@@ -269,7 +251,7 @@ Game.prototype = {
         this.mapData.setTileIndexCallback(13, function() {
             if(fireCollected){
                 music.stop();
-                gameState.start('Level2');
+                gameState.start('GameOver');
             }
         }, this.game, this.exitLayer);
         this.mapData.setCollisionBetween(0,2000,true,this.vineLayer);
@@ -388,25 +370,3 @@ Game.prototype = {
     
 };
 
-//generic enemy constructor
-
-Enemy = function(parentObj,x, y){
-    Phaser.Sprite.call(this, parentObj.game, x, y, 'phaser', 14);
-    parentObj.setObjectProperties(this, parentObj.game, true, false);
-    this.body.velocity.x = 120 / 2;
-    this.body.bounce.x = 1;
-    this.parentObj = parentObj;
-};
-Enemy.prototype = Object.create(Phaser.Sprite.prototype);
-Enemy.prototype.constructor = Enemy;
-Enemy.prototype.update = function(){
-    this.parentObj.game.physics.arcade.collide(this, this.parentObj.mapLayer);
-    this.parentObj.game.physics.arcade.collide(this, this.parentObj.edgesLayer, function(tempEnemy, edge){
-        if(tempEnemy.body.velocity.x < 0){
-            tempEnemy.body.velocity.x = -120 /2;
-        }else{
-            tempEnemy.body.velocity.x = 120 /2;
-        }
-    }, null,this);
-    this.parentObj.enemyFollow(this);
-}
