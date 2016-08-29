@@ -43,6 +43,7 @@ var Game = function (game) {
     enemyDieSound = null;
     itemPickUpSound = null;
     climbing = 0;
+    enemyRunning = 0;
 };
 
 Game.prototype = {
@@ -149,6 +150,9 @@ Game.prototype = {
         enemyDieSound = this.game.add.audio('enemyDieSound');
         itemPickUpSound = this.game.add.audio('itemPickUpSound');
         
+        enemyRunSound.onStop.add(this.soundStopped, this);
+        climbingSound.onStop.add(this.soundStopped, this);
+        
         /* create our lives */
         for(var i = 0; i < lives; i ++) {
             var x = 752 - (i * 16);
@@ -252,7 +256,10 @@ Game.prototype = {
        if(close){
             tempEnemy.body.velocity.x = Math.min(this.MAX_SPEED * 2, 
             Math.max(4 * (player.x - tempEnemy.x), -this.MAX_SPEED * 2)) ;
-            enemyRunSound.play();
+            if(enemyRunning == 0) {
+                enemyRunSound.play();
+                enemyRunning = 1;
+            }
         }
         return close;
     },
@@ -398,6 +405,7 @@ Game.prototype = {
         /* fire collected */
         if(this.game.physics.arcade.collide(player, fire)){
             fireCollected = true;
+            itemPickUpSound.play();
             fire.destroy();
         }
         /* spear collected */
@@ -436,9 +444,6 @@ Game.prototype = {
             player.body.velocity.y = 0;
             //player.body.allowGravity = false;
         }
-        if(canClimb && !bool) {
-            climbing = 0;
-        }
     },
     
     chooseLocation: function() {
@@ -466,6 +471,14 @@ Game.prototype = {
         stick.destroy();
         fire.destroy();
         //player.destroy();
-    }
+    },
     
+    soundStopped: function(sound) {
+        if (sound.name === "enemyRunSound") {
+            enemyRunning = 0;
+        }
+        if(sound.name === "climbingSound") {
+            climbing = 0;
+        }
+    }
 };

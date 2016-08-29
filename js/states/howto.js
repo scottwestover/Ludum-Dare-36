@@ -34,7 +34,11 @@ Instructions.prototype = {
         var instruct5 = game.add.text(0,0,"Collect the fire object and get",style1);
         instruct5.setTextBounds(0, 100, 800, 455);
         var instruct6 = game.add.text(0,0,"back to your cave to win the level.",style1);
-        instruct6.setTextBounds(0, 100, 800, 510);
+        instruct6.setTextBounds(0, 100, 800, 520);
+        var instruct7 = game.add.text(0,0,"You can climb and hang from vines",style1);
+        instruct7.setTextBounds(0, 100, 800, 600);
+        var instruct8 = game.add.text(0,0,"with the up Arrow.",style1);
+        instruct8.setTextBounds(0, 100, 800, 650);
         
         /* start game text */
         var startText = game.add.text(0,0,"Back To Menu",style);

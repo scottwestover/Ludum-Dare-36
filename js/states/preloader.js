@@ -55,7 +55,7 @@ Preloader.prototype = {
         this.game.load.audio('climbingSound', 'assets/audio/climbing.mp3');
         this.game.load.audio('enemyDieSound', 'assets/audio/enemyDie.mp3');
         this.game.load.audio('enemyRunSound', 'assets/audio/enemyRun.mp3');
-        this.game.load.audio('itemPickUpSound', 'assets/audio/itePickup.mp3');
+        this.game.load.audio('itemPickUpSound', 'assets/audio/itemPickup.mp3');
         this.game.load.audio('playerDieSound', 'assets/audio/playerDie.mp3');
         this.game.load.audio('winningSound', 'assets/audio/winning.mp3');
         this.game.load.audio('spearThrow', 'assets/audio/spearThrow.mp3');

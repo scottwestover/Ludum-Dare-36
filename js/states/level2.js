@@ -39,6 +39,7 @@ var Level2 = function (game) {
     enemyDieSound = null;
     itemPickUpSound = null;
     climbing = 0;
+    enemyRunning = 0;
 };
 
 Level2.prototype = {
@@ -141,6 +142,9 @@ Level2.prototype = {
         playerDieSound = this.game.add.audio('playerDieSound');
         enemyDieSound = this.game.add.audio('enemyDieSound');
         itemPickUpSound = this.game.add.audio('itemPickUpSound');
+        
+        enemyRunSound.onStop.add(this.soundStopped, this);
+        climbingSound.onStop.add(this.soundStopped, this);
         
         /* create our lives */
         for(var i = 0; i < lives; i ++) {
@@ -249,7 +253,10 @@ Level2.prototype = {
        if(close){
             tempEnemy.body.velocity.x = Math.min(this.MAX_SPEED * 2, 
             Math.max(4 * (player.x - tempEnemy.x), -this.MAX_SPEED * 2)) ;
-            enemyRunSound.play();
+             if(enemyRunning == 0) {
+                enemyRunSound.play();
+                enemyRunning = 1;
+            }
         }
         return close;
     },
@@ -382,6 +389,8 @@ Level2.prototype = {
         /* fire collected */
         if(this.game.physics.arcade.collide(player, fire)){
             fireCollected = true;
+            itemPickUpSound.play();
+            fire.destroy();
             fire.destroy();
         }
         /* spear collected */
@@ -415,9 +424,6 @@ Level2.prototype = {
             player.body.velocity.y = 0;
             //player.body.allowGravity = false;
         }
-        if(canClimb && !bool) {
-            climbing = 0;
-        }
     },
     
     chooseLocation: function() {
@@ -440,6 +446,15 @@ Level2.prototype = {
         spearHead.destroy();
         stick.destroy();
         fire.destroy();
+    },
+    
+    soundStopped: function(sound) {
+        if (sound.name === "enemyRunSound") {
+            enemyRunning = 0;
+        }
+        if(sound.name === "climbingSound") {
+            climbing = 0;
+        }
     }
     
 };
